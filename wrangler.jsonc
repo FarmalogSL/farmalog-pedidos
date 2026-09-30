@@ -3,6 +3,13 @@
   "name": "farmalog-pedidos",
   "main": "src/index.js",
   "compatibility_date": "2026-09-29",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "farmalog-db",
+      "database_id": "48ffc7ce-c3bd-4f0b-8c0e-9e575fcd349b"
+    }
+  ],
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
