@@ -1,38 +1,15 @@
-const json = (data, status = 200) => new Response(JSON.stringify(data), {status, headers:{"content-type":"application/json; charset=utf-8"}});
-const keyFor = d => String(d.nif || d.codigoCooperativa || d.nombre || "").trim().toUpperCase();
+import { sendSMTP } from "./smtp.js";
+const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{"content-type":"application/json; charset=utf-8"}});
+const keyFor=d=>String(d.nif||d.codigoCooperativa||d.nombre||"").trim().toUpperCase();
+const csvCell=v=>`"${String(v??"").replaceAll('"','""')}"`;
+const toBase64Utf8=s=>{const bytes=new TextEncoder().encode(s);let b="";for(const x of bytes)b+=String.fromCharCode(x);return btoa(b)};
+const plantilla=d=>{const h=["Farmacia","NIF","Código Cooperativa","CN","Presentación","Unidades","Descuento","Provincia"];const rows=(d.lineas||[]).map(l=>[d.farmacia.nombre,d.farmacia.nif,d.codigoCooperativista,l.cn,l.presentacion,l.unidades,l.descuento,d.farmacia.provincia]);return "\uFEFF"+[h,...rows].map(r=>r.map(csvCell).join(";")).join("\r\n")};
 
-export default {
-  async fetch(request, env) {
-    const url = new URL(request.url);
-    try {
-      if (url.pathname === "/api/health") return json({ok:true,database:!!env.DB});
-
-      if (url.pathname === "/api/datos" && request.method === "GET") {
-        const clave = url.searchParams.get("clave") || "";
-        const cooperativa = url.searchParams.get("cooperativa") || "";
-        if (!clave) return json({farmacia:null,codigo:""});
-        const farmacia = await env.DB.prepare("SELECT * FROM farmacias WHERE clave=?").bind(clave).first();
-        const codigo = await env.DB.prepare("SELECT codigo FROM codigos_cooperativista WHERE farmacia_clave=? AND cooperativa=?").bind(clave, cooperativa).first();
-        return json({farmacia:farmacia||null,codigo:codigo?.codigo||""});
-      }
-
-      if (url.pathname === "/api/pedido" && request.method === "POST") {
-        const d = await request.json();
-        const f = d.farmacia || {};
-        const clave = keyFor(f);
-        if (!clave || !f.nombre || !f.nif || !f.direccion || !f.cp || !f.localidad || !f.provincia || !d.cooperativa || !d.codigoCooperativista || (!f.telefono && !f.email)) return json({ok:false,error:"Faltan datos obligatorios"},400);
-        const statements = [
-          env.DB.prepare(`INSERT INTO farmacias (clave,nombre,nif,direccion,cp,localidad,provincia,telefono,email,actualizado) VALUES (?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP)
-          ON CONFLICT(clave) DO UPDATE SET nombre=excluded.nombre,nif=excluded.nif,direccion=excluded.direccion,cp=excluded.cp,localidad=excluded.localidad,provincia=excluded.provincia,telefono=excluded.telefono,email=excluded.email,actualizado=CURRENT_TIMESTAMP`).bind(clave,f.nombre,f.nif,f.direccion,f.cp,f.localidad,f.provincia,f.telefono||"",f.email||""),
-          env.DB.prepare(`INSERT INTO codigos_cooperativista (farmacia_clave,cooperativa,codigo,actualizado) VALUES (?,?,?,CURRENT_TIMESTAMP)
-          ON CONFLICT(farmacia_clave,cooperativa) DO UPDATE SET codigo=excluded.codigo,actualizado=CURRENT_TIMESTAMP`).bind(clave,d.cooperativa,d.codigoCooperativista),
-          env.DB.prepare("INSERT INTO pedidos (id,fecha,farmacia_clave,cooperativa,codigo_cooperativista,estado) VALUES (?,?,?,?,?,?)").bind(d.id,new Date().toISOString(),clave,d.cooperativa,d.codigoCooperativista,"Registrado")
-        ];
-        await env.DB.batch(statements);
-        return json({ok:true,clave});
-      }
-
-      return env.ASSETS.fetch(request);
-    } catch (e) { return json({ok:false,error:e.message||"Error interno"},500); }
-  }
-};
+export default{async fetch(request,env){const url=new URL(request.url);try{
+ if(url.pathname==="/api/health")return json({ok:true,database:!!env.DB,smtp:!!env.SMTP_USER&&!!env.SMTP_PASSWORD});
+ if(url.pathname==="/api/datos"&&request.method==="GET"){const clave=url.searchParams.get("clave")||"",cooperativa=url.searchParams.get("cooperativa")||"";if(!clave)return json({farmacia:null,codigo:""});const farmacia=await env.DB.prepare("SELECT * FROM farmacias WHERE clave=?").bind(clave).first();const codigo=await env.DB.prepare("SELECT codigo FROM codigos_cooperativista WHERE farmacia_clave=? AND cooperativa=?").bind(clave,cooperativa).first();return json({farmacia:farmacia||null,codigo:codigo?.codigo||""})}
+ if(url.pathname==="/api/pedido"&&request.method==="POST"){const d=await request.json(),f=d.farmacia||{},clave=keyFor(f);if(!clave||!f.nombre||!f.nif||!f.direccion||!f.cp||!f.localidad||!f.provincia||!d.cooperativa||!d.codigoCooperativista||(!f.telefono&&!f.email))return json({ok:false,error:"Faltan datos obligatorios"},400);await env.DB.batch([env.DB.prepare(`INSERT INTO farmacias (clave,nombre,nif,direccion,cp,localidad,provincia,telefono,email,actualizado) VALUES (?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP) ON CONFLICT(clave) DO UPDATE SET nombre=excluded.nombre,nif=excluded.nif,direccion=excluded.direccion,cp=excluded.cp,localidad=excluded.localidad,provincia=excluded.provincia,telefono=excluded.telefono,email=excluded.email,actualizado=CURRENT_TIMESTAMP`).bind(clave,f.nombre,f.nif,f.direccion,f.cp,f.localidad,f.provincia,f.telefono||"",f.email||""),env.DB.prepare(`INSERT INTO codigos_cooperativista (farmacia_clave,cooperativa,codigo,actualizado) VALUES (?,?,?,CURRENT_TIMESTAMP) ON CONFLICT(farmacia_clave,cooperativa) DO UPDATE SET codigo=excluded.codigo,actualizado=CURRENT_TIMESTAMP`).bind(clave,d.cooperativa,d.codigoCooperativista),env.DB.prepare("INSERT INTO pedidos (id,fecha,farmacia_clave,cooperativa,codigo_cooperativista,estado) VALUES (?,?,?,?,?,?)").bind(d.id,new Date().toISOString(),clave,d.cooperativa,d.codigoCooperativista,"Registrado")]);return json({ok:true,clave})}
+ if(url.pathname==="/api/enviar-prueba"&&request.method==="POST"){const d=await request.json();if(!d.to)return json({ok:false,error:"Falta destinatario de prueba"},400);await sendSMTP({user:env.SMTP_USER,password:env.SMTP_PASSWORD,to:d.to,subject:"Prueba SMTP Farmalog",text:"Prueba de envío desde Farmalog. No es un pedido real."});return json({ok:true})}
+ if(url.pathname==="/api/enviar-pedido"&&request.method==="POST"){const d=await request.json();if(!d.to)return json({ok:false,error:"Falta destinatario"},400);const csv=plantilla(d),name=`pedido_${String(d.cooperativa||"cooperativa").replaceAll(" ","_")}_${Date.now()}.csv`;await sendSMTP({user:env.SMTP_USER,password:env.SMTP_PASSWORD,to:d.to,subject:`Pedido Farmalog - ${d.cooperativa}`,text:`Adjuntamos pedido de ${d.farmacia?.nombre||"farmacia"}.`,attachments:[{filename:name,contentType:"text/csv; charset=utf-8",base64:toBase64Utf8(csv)}]});return json({ok:true})}
+ return env.ASSETS.fetch(request)
+}catch(e){return json({ok:false,error:e.message||"Error interno"},500)}}};
