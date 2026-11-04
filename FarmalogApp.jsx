@@ -8,7 +8,10 @@ useEffect(()=>{fetch("/farmacias.csv").then(r=>{if(!r.ok)throw new Error();retur
 useEffect(()=>{
   fetch("/api/listarPedidos")
     .then(r=>r.json())
-    .then(d=>setPedidos(d||[]))
+    .then(d=>{
+  console.log("PEDIDOS D1",d);
+  setPedidos(d||[]);
+})
     .catch(()=>{});
 },[]);const matches=useMemo(()=>{const q=query.trim().toLowerCase();if(q.length<2)return[];return farmacias.filter(f=>[f.nombre,f.direccion,f.localidad,f.provincia,f.cp,f.nif,f.codigoCooperativa].some(v=>String(v||"").toLowerCase().includes(q))).slice(0,30)},[query,farmacias]);
 const registrar=()=>{if(!farmacia)return;setPedidos(p=>[{id:crypto.randomUUID(),fecha:new Date().toLocaleString("es-ES"),farmacia:farmacia.nombre,cooperativa:coop,lineas:lineas.length,estado:"Registrado"},...p]);setLineas([{cn:"",presentacion:"",unidades:1,descuento:""}])};
