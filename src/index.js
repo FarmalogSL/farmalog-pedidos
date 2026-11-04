@@ -28,5 +28,23 @@ export default{async fetch(request,env){const url=new URL(request.url);try{
     resultado.results || []
   );
 }
+ if(
+  url.pathname==="/api/listarPedidos"
+  &&
+  request.method==="GET"
+){
+  const resultado = await env.DB
+    .prepare(`
+      SELECT *
+      FROM pedidos
+      ORDER BY fecha DESC
+      LIMIT 100
+    `)
+    .all();
+
+  return json(
+    resultado.results || []
+  );
+}
  return env.ASSETS.fetch(request)
 }catch(e){return json({ok:false,error:e.message||"Error interno"},500)}}};
