@@ -16,6 +16,7 @@ useEffect(()=>{
     .catch(e=>{
       console.error("ERROR HISTORICO",e);
     });
+  console.log("PEDIDOS ACTUALES", pedidos);
 },[]);const matches=useMemo(()=>{const q=query.trim().toLowerCase();if(q.length<2)return[];return farmacias.filter(f=>[f.nombre,f.direccion,f.localidad,f.provincia,f.cp,f.nif,f.codigoCooperativa].some(v=>String(v||"").toLowerCase().includes(q))).slice(0,30)},[query,farmacias]);
 const registrar=()=>{if(!farmacia)return;setPedidos(p=>[{id:crypto.randomUUID(),fecha:new Date().toLocaleString("es-ES"),farmacia:farmacia.nombre,cooperativa:coop,lineas:lineas.length,estado:"Registrado"},...p]);setLineas([{cn:"",presentacion:"",unidades:1,descuento:""}])};
 if(!logged)return <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6"><div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8"><div className="text-3xl font-bold text-blue-950">FARMALOG</div><p className="text-slate-500 mt-1 mb-7">Gestor de pedidos</p><input className="w-full border rounded-xl p-3 mb-3" placeholder="Usuario" value={usuario} onChange={e=>setUsuario(e.target.value)}/><input type="password" className="w-full border rounded-xl p-3 mb-5" placeholder="Contraseña" value={password} onChange={e=>setPassword(e.target.value)}/><button className="w-full bg-blue-900 text-white rounded-xl p-3 font-semibold" onClick={()=>{
