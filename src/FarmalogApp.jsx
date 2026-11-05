@@ -18,6 +18,9 @@ const esAdmin =
   usuario.trim().toUpperCase() === "ADMIN";
  const[query,setQuery]=useState(""),[farmacia,setFarmacia]=useState(null),[coop,setCoop]=useState("BIDAFARMA"),[codigo,setCodigo]=useState("");
  const[lineas,setLineas]=useState([{cn:"",presentacion:"",unidades:1,descuento:""}]),[pedidos,setPedidos]=useState([]),[vista,setVista]=useState("pedido"),[mensaje,setMensaje]=useState("");
+ const [pedidoSeleccionado,setPedidoSeleccionado]=useState(null);
+ [mensaje,setMensaje]=useState("");
+ 
  const[farmacias,setFarmacias]=useState([]),[productos,setProductos]=useState([]),[estado,setEstado]=useState("Cargando maestro...");
  useEffect(()=>{fetch("/farmacias.csv").then(r=>r.text()).then(t=>{const rows=t.replace(/^\uFEFF/,"").split(/\r?\n/).filter(Boolean),h=parseCsvLine(rows[0]),ix=n=>h.indexOf(n);const d=rows.slice(1).map(parseCsvLine).filter(r=>r[ix("Nombre")]).map(r=>({codigoCooperativa:r[ix("CODIGO COOPERATIVA")]||"",nif:r[ix("NIF")]||"",nombre:r[ix("Nombre")]||"",direccion:r[ix("Direccion")]||"",localidad:r[ix("localidad")]||"",provincia:r[ix("provincia")]||"",cp:r[ix("cod. Postal")]||"",telefono:r[ix("Telefono")]||"",email:r[ix("Email")]||""}));setFarmacias(d);setEstado(`${d.length.toLocaleString("es-ES")} farmacias cargadas`)}).catch(()=>setEstado("Error cargando maestro"))},[]);
  useEffect(()=>{fetch("/productos.csv").then(r=>r.text()).then(t=>{const rows=t.replace(/^\uFEFF/,"").split(/\r?\n/).filter(Boolean),h=parseCsvLine(rows[0]),ix=n=>h.indexOf(n);setProductos(rows.slice(1).map(parseCsvLine).filter(r=>r[ix("Código Nacional")]).map(r=>({cn:(r[ix("Código Nacional")]||"").trim(),producto:r[ix("PRODUCTO")]||"",formato:r[ix("FORMATO")]||""})))}).catch(()=>{})},[]);
@@ -79,7 +82,11 @@ const esAdmin =
 </thead>
 <tbody>
 {pedidos.map(p=>(
-<tr key={p.id} className="border-b">
+<tr
+  key={p.id}
+  className="border-b cursor-pointer hover:bg-slate-50"
+  onClick={()=>setPedidoSeleccionado(p)}
+>
 <td className="p-2">
   {p.farmacia?.nombre || p.farmacia_clave}
 </td>
@@ -103,5 +110,29 @@ const esAdmin =
 <p className="text-slate-500">
 Todavía no hay pedidos registrados en esta sesión.
 </p>
-)}</section>}</main></div>;
+{pedidoSeleccionado && (
+  <div className="mt-6 bg-blue-50 rounded-xl p-4 border">
+    <h3 className="font-bold text-lg mb-3">
+      Detalle del pedido
+    </h3>
+
+    <div><b>Fecha:</b> {new Date(pedidoSeleccionado.fecha).toLocaleString("es-ES")}</div>
+
+    <div><b>Farmacia:</b> {pedidoSeleccionado.farmacia?.nombre || pedidoSeleccionado.farmacia_clave}</div>
+
+    <div><b>Código cooperativista:</b> {pedidoSeleccionado.codigo_cooperativista || pedidoSeleccionado.codigoCooperativista || "-"}</div>
+
+    <div><b>Cooperativa:</b> {pedidoSeleccionado.cooperativa}</div>
+
+    <div><b>Estado:</b> {pedidoSeleccionado.estado}</div>
+
+    <button
+      className="mt-4 bg-slate-700 text-white px-4 py-2 rounded-lg"
+      onClick={() => setPedidoSeleccionado(null)}
+    >
+      Cerrar
+    </button>
+  </div>
+)}
+ )}</section>}</main></div>;
 }
