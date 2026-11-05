@@ -22,6 +22,12 @@ const esAdmin =
  useEffect(()=>{fetch("/farmacias.csv").then(r=>r.text()).then(t=>{const rows=t.replace(/^\uFEFF/,"").split(/\r?\n/).filter(Boolean),h=parseCsvLine(rows[0]),ix=n=>h.indexOf(n);const d=rows.slice(1).map(parseCsvLine).filter(r=>r[ix("Nombre")]).map(r=>({codigoCooperativa:r[ix("CODIGO COOPERATIVA")]||"",nif:r[ix("NIF")]||"",nombre:r[ix("Nombre")]||"",direccion:r[ix("Direccion")]||"",localidad:r[ix("localidad")]||"",provincia:r[ix("provincia")]||"",cp:r[ix("cod. Postal")]||"",telefono:r[ix("Telefono")]||"",email:r[ix("Email")]||""}));setFarmacias(d);setEstado(`${d.length.toLocaleString("es-ES")} farmacias cargadas`)}).catch(()=>setEstado("Error cargando maestro"))},[]);
  useEffect(()=>{fetch("/productos.csv").then(r=>r.text()).then(t=>{const rows=t.replace(/^\uFEFF/,"").split(/\r?\n/).filter(Boolean),h=parseCsvLine(rows[0]),ix=n=>h.indexOf(n);setProductos(rows.slice(1).map(parseCsvLine).filter(r=>r[ix("Código Nacional")]).map(r=>({cn:(r[ix("Código Nacional")]||"").trim(),producto:r[ix("PRODUCTO")]||"",formato:r[ix("FORMATO")]||""})))}).catch(()=>{})},[]);
  useEffect(()=>{
+  fetch("/api/listarPedidos")
+    .then(r=>r.json())
+    .then(d=>setPedidos(d||[]))
+    .catch(()=>{});
+},[]);
+ useEffect(()=>{
   console.log("ARRANCA HISTORICO");
 
   fetch("/api/listarPedidos")
