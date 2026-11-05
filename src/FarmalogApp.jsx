@@ -21,6 +21,12 @@ const esAdmin =
  const[farmacias,setFarmacias]=useState([]),[productos,setProductos]=useState([]),[estado,setEstado]=useState("Cargando maestro...");
  useEffect(()=>{fetch("/farmacias.csv").then(r=>r.text()).then(t=>{const rows=t.replace(/^\uFEFF/,"").split(/\r?\n/).filter(Boolean),h=parseCsvLine(rows[0]),ix=n=>h.indexOf(n);const d=rows.slice(1).map(parseCsvLine).filter(r=>r[ix("Nombre")]).map(r=>({codigoCooperativa:r[ix("CODIGO COOPERATIVA")]||"",nif:r[ix("NIF")]||"",nombre:r[ix("Nombre")]||"",direccion:r[ix("Direccion")]||"",localidad:r[ix("localidad")]||"",provincia:r[ix("provincia")]||"",cp:r[ix("cod. Postal")]||"",telefono:r[ix("Telefono")]||"",email:r[ix("Email")]||""}));setFarmacias(d);setEstado(`${d.length.toLocaleString("es-ES")} farmacias cargadas`)}).catch(()=>setEstado("Error cargando maestro"))},[]);
  useEffect(()=>{fetch("/productos.csv").then(r=>r.text()).then(t=>{const rows=t.replace(/^\uFEFF/,"").split(/\r?\n/).filter(Boolean),h=parseCsvLine(rows[0]),ix=n=>h.indexOf(n);setProductos(rows.slice(1).map(parseCsvLine).filter(r=>r[ix("Código Nacional")]).map(r=>({cn:(r[ix("Código Nacional")]||"").trim(),producto:r[ix("PRODUCTO")]||"",formato:r[ix("FORMATO")]||""})))}).catch(()=>{})},[]);
+ useEffect(()=>{
+  fetch("/api/listarPedidos")
+    .then(r=>r.json())
+    .then(d=>setPedidos(d||[]))
+    .catch(()=>{});
+},[]);
  const matches=useMemo(()=>{const q=query.trim().toLowerCase();if(q.length<2)return[];return farmacias.filter(f=>[f.nombre,f.direccion,f.localidad,f.provincia,f.cp,f.nif,f.codigoCooperativa].some(v=>String(v||"").toLowerCase().includes(q))).slice(0,30)},[query,farmacias]);
  const seleccionar=async f=>{setFarmacia({...f});setQuery(f.nombre);setCodigo(f.codigoCooperativa||"");setMensaje("");try{const r=await fetch(`/api/datos?clave=${encodeURIComponent(clave(f))}&cooperativa=${encodeURIComponent(coop)}`);if(r.ok){const d=await r.json();if(d.farmacia)setFarmacia(x=>({...x,nombre:d.farmacia.nombre||x.nombre,nif:d.farmacia.nif||x.nif,direccion:d.farmacia.direccion||x.direccion,cp:d.farmacia.cp||x.cp,localidad:d.farmacia.localidad||x.localidad,provincia:d.farmacia.provincia||x.provincia,telefono:d.farmacia.telefono||x.telefono,email:d.farmacia.email||x.email}));if(d.codigo)setCodigo(d.codigo)}}catch{}};
  useEffect(()=>{if(farmacia)fetch(`/api/datos?clave=${encodeURIComponent(clave(farmacia))}&cooperativa=${encodeURIComponent(coop)}`).then(r=>r.ok?r.json():null).then(d=>d&&setCodigo(d.codigo||farmacia.codigoCooperativa||"")).catch(()=>{})},[coop]);
