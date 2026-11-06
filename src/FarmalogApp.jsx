@@ -19,7 +19,7 @@ const esAdmin =
  const[query,setQuery]=useState(""),[farmacia,setFarmacia]=useState(null),[coop,setCoop]=useState("BIDAFARMA"),[codigo,setCodigo]=useState("");
  const[lineas,setLineas]=useState([{cn:"",presentacion:"",unidades:1,descuento:""}]),[pedidos,setPedidos]=useState([]),[vista,setVista]=useState("pedido"),[mensaje,setMensaje]=useState("");
  const [pedidoSeleccionado,setPedidoSeleccionado]=useState(null);
- [mensaje,setMensaje]=useState("");
+ 
  
  const[farmacias,setFarmacias]=useState([]),[productos,setProductos]=useState([]),[estado,setEstado]=useState("Cargando maestro...");
  useEffect(()=>{fetch("/farmacias.csv").then(r=>r.text()).then(t=>{const rows=t.replace(/^\uFEFF/,"").split(/\r?\n/).filter(Boolean),h=parseCsvLine(rows[0]),ix=n=>h.indexOf(n);const d=rows.slice(1).map(parseCsvLine).filter(r=>r[ix("Nombre")]).map(r=>({codigoCooperativa:r[ix("CODIGO COOPERATIVA")]||"",nif:r[ix("NIF")]||"",nombre:r[ix("Nombre")]||"",direccion:r[ix("Direccion")]||"",localidad:r[ix("localidad")]||"",provincia:r[ix("provincia")]||"",cp:r[ix("cod. Postal")]||"",telefono:r[ix("Telefono")]||"",email:r[ix("Email")]||""}));setFarmacias(d);setEstado(`${d.length.toLocaleString("es-ES")} farmacias cargadas`)}).catch(()=>setEstado("Error cargando maestro"))},[]);
