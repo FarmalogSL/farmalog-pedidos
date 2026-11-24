@@ -134,9 +134,8 @@ const esAdmin =
       onClick={() => setPedidoSeleccionado(null)}
     >
       Cerrar
-    </button>
+</button>
   </div>
-)}
 )}
 </section>}
 </main>
