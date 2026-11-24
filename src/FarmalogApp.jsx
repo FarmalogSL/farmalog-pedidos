@@ -102,7 +102,10 @@ const esAdmin =
     Todavía no hay pedidos registrados en esta sesión.
   </p>
 )}
-
+<div style={{background:"yellow",padding:"10px"}}>
+  PEDIDO SELECCIONADO:
+  {pedidoSeleccionado ? "SI" : "NO"}
+</div>
 {pedidoSeleccionado && (
   <div className="mt-6 bg-blue-50 rounded-xl p-4 border">
     <h3 className="font-bold text-lg mb-3">
