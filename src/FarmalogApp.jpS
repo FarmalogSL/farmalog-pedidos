@@ -97,50 +97,36 @@ const esAdmin =
 </tbody>
 </table>
 ) : (
-<p className="text-slate-500">
-Todavía no hay pedidos registrados en esta sesión.
-</p>
+  <p className="text-slate-500">
+    Todavía no hay pedidos registrados en esta sesión.
+  </p>
+)}
+
 {pedidoSeleccionado && (
   <div className="mt-6 bg-blue-50 rounded-xl p-4 border">
     <h3 className="font-bold text-lg mb-3">
       Detalle del pedido
     </h3>
 
-    <div><b>Fecha:</b> {new Date(pedidoSeleccionado.fecha).toLocaleString("es-ES")}</div>
+    <div>
+      <b>Fecha:</b> {new Date(pedidoSeleccionado.fecha).toLocaleString("es-ES")}
+    </div>
 
-    <div><b>Farmacia:</b> {pedidoSeleccionado.farmacia?.nombre || pedidoSeleccionado.farmacia_clave}</div>
+    <div>
+      <b>Farmacia:</b> {pedidoSeleccionado.farmacia?.nombre || pedidoSeleccionado.farmacia_clave}
+    </div>
 
-    <div><b>Código cooperativista:</b> {pedidoSeleccionado.codigo_cooperativista || pedidoSeleccionado.codigoCooperativista || "-"}</div>
+    <div>
+      <b>Código cooperativista:</b> {pedidoSeleccionado.codigo_cooperativista || pedidoSeleccionado.codigoCooperativista || "-"}
+    </div>
 
-    <div><b>Cooperativa:</b> {pedidoSeleccionado.cooperativa}</div>
+    <div>
+      <b>Cooperativa:</b> {pedidoSeleccionado.cooperativa}
+    </div>
 
-    <div><b>Estado:</b> {pedidoSeleccionado.estado}</div>
-
-    <button
-      className="mt-4 bg-slate-700 text-white px-4 py-2 rounded-lg"
-      onClick={() => setPedidoSeleccionado(null)}
-    >
-      Cerrar
-  </button>
-  </div>
-)}
-)}
-
-
-  <div className="mt-6 bg-blue-50 rounded-xl p-4 border">
-    <h3 className="font-bold text-lg mb-3">
-      Detalle del pedido
-    </h3>
-
-    <div><b>Fecha:</b> {new Date(pedidoSeleccionado.fecha).toLocaleString("es-ES")}</div>
-
-    <div><b>Farmacia:</b> {pedidoSeleccionado.farmacia?.nombre || pedidoSeleccionado.farmacia_clave}</div>
-
-    <div><b>Código cooperativista:</b> {pedidoSeleccionado.codigo_cooperativista || pedidoSeleccionado.codigoCooperativista || "-"}</div>
-
-    <div><b>Cooperativa:</b> {pedidoSeleccionado.cooperativa}</div>
-
-    <div><b>Estado:</b> {pedidoSeleccionado.estado}</div>
+    <div>
+      <b>Estado:</b> {pedidoSeleccionado.estado}
+    </div>
 
     <button
       className="mt-4 bg-slate-700 text-white px-4 py-2 rounded-lg"
@@ -150,8 +136,8 @@ Todavía no hay pedidos registrados en esta sesión.
     </button>
   </div>
 )}
-
+)}
 </section>}
 </main>
 </div>;
-}
+)}
