@@ -49,7 +49,7 @@ const esAdmin =
   farmacia,
   cooperativa:coop,
   codigoCooperativista:codigo,
-  delegado: "PRUEBA_BELEN",
+  delegado: usuario.trim().toUpperCase(),,
   lineas:lineas.filter(l=>l.cn)
 };
  console.log("PEDIDO ENVIADO", pedido);                         
