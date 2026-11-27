@@ -23,7 +23,8 @@ VALUES (?,?,?,?,?,?,?)`
   d.cooperativa,
   d.codigoCooperativista,
   "Registrado",
-  "PRUEBA_DIRECTA"
+  d.delegado || null
+)
 )
 ]);return json({
   ok:true,
