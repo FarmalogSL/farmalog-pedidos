@@ -52,7 +52,7 @@ const esAdmin =
   delegado: usuario.trim().toUpperCase(),,
   lineas:lineas.filter(l=>l.cn)
 };
- console.log("PEDIDO ENVIADO", pedido);                         
+                          
  const r=await fetch("/api/pedido",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(pedido)});if(!r.ok){setMensaje("No se pudo guardar el pedido.");return}setPedidos(p => [
   {...pedido,fecha:new Date().toLocaleString("es-ES"),estado:"Registrado"},
   ...(Array.isArray(p) ? p : [])
