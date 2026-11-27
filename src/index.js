@@ -23,7 +23,7 @@ VALUES (?,?,?,?,?,?,?)`
   d.cooperativa,
   d.codigoCooperativista,
   "Registrado",
-  d.delegado || null
+  "PRUEBA_DIRECTA"
 )]);return json({ok:true,clave})}
  if(url.pathname==="/api/enviar-prueba"&&request.method==="POST"){const d=await request.json();if(!d.to)return json({ok:false,error:"Falta destinatario de prueba"},400);await sendSMTP({user:env.SMTP_USER,password:env.SMTP_PASSWORD,to:d.to,subject:"Prueba SMTP Farmalog",text:"Prueba de envío desde Farmalog. No es un pedido real."});return json({ok:true})}
  if(url.pathname==="/api/enviar-pedido"&&request.method==="POST"){const d=await request.json();if(!d.to)return json({ok:false,error:"Falta destinatario"},400);const csv=plantilla(d),name=`pedido_${String(d.cooperativa||"cooperativa").replaceAll(" ","_")}_${Date.now()}.csv`;await sendSMTP({user:env.SMTP_USER,password:env.SMTP_PASSWORD,to:d.to,subject:`Pedido Farmalog - ${d.cooperativa}`,text:`Adjuntamos pedido de ${d.farmacia?.nombre||"farmacia"}.`,attachments:[{filename:name,contentType:"text/csv; charset=utf-8",base64:toBase64Utf8(csv)}]});return json({ok:true})}if(
